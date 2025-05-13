@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       relName:
-        description: 'Release Name'     
+        description: 'Release Name'
         required: true
         default: 'Release v1.0.0'
       tagName:
-        description: 'Release tag'  
+        description: 'Release tag'
         required: true
         default: ""
 
@@ -26,7 +26,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Init and update submodules
-      run: | 
+      run: |
         git submodule init
         git submodule update
     - name: Install gcc-multilib, g++-multilib
@@ -38,9 +38,9 @@ jobs:
          chmod +x ./build.sh
          ./build.sh
       shell: bash
-      
+
     - name: Create artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: linux-artifacts
         path: |
@@ -65,18 +65,17 @@ jobs:
         dest: creamlinux.zip
     - name: Upload Release Assets
       if: ${{ github.event_name == 'workflow_dispatch'}}
-      id: upload-release-asset 
+      id: upload-release-asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
         asset_path: ./creamlinux.zip
         asset_name: creamlinux.zip
         asset_content_type: application/zip
     - name: Test
       working-directory: ${{github.workspace}}/build
-      # Execute tests defined by the CMake configuration.  
+      # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
-      
